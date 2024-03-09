@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Barfas RTLS</title>
+    <!-- Meta -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <meta name="author" content="Phoenixcoded" />
+    <!-- Favicon icon -->
+    <link rel="icon" href="/assets/images/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <!-- vendor css -->
+    <link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+<body>
+    <!-- Navbar -->
+    <%-include('navbar')%>
+
+    <!-- Content -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- [ Hover-table ] start -->
+                <div class="card">
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>X Coordinate</th>
+                                        <th>Y Coordinate</th>
+                                        <th>Z Coordinate</th>
+                                        <th>Active</th>
+                                        <th>Time</th>
+                                        <th>Edit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% let previousName = ''; %> <% let index = 0; %> <%
+                                    jsonData.forEach((item) => { %> <% if (item.name !==
+                                    previousName) { %>
+                                    <tr>
+                                        <td><%= ++index %></td>
+                                        <td><%= item.name %></td>
+                                        <td><%= item.xCoordinate %></td>
+                                        <td><%= item.yCoordinate %></td>
+                                        <td><%= item.zCoordinate %></td>
+                                        <td><%= item.active %></td>
+                                        <td><%= item.time %></td>
+                                        <td>
+                                            <button
+                                                type="button"
+                                                class="btn btn-success edit-btn"
+                                                data-name="<%= item.name %>"
+                                                data-x="<%= item.xCoordinate %>"
+                                                data-y="<%= item.yCoordinate %>"
+                                                data-z="<%= item.zCoordinate %>"
+                                                data-active="<%= item.active %>"
+                                                data-time="<%= item.time %>"
+                                            >
+                                                Edit
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <% previousName = item.name; %> <% } %> <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div
+    class="modal fade"
+    id="editModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="editModalLabel"
+    aria-hidden="true"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    style="display: none;"
+>
+    <!-- Modal content -->
+</div>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Record</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="id" name="id" />
+                    <div class="form-group">
+                        <label for="name" class="col-form-label">Name:</label>
+                        <input type="text" class="form-control" id="name" name="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="x" class="col-form-label">X Coordinate:</label>
+                        <input type="text" class="form-control" id="x" name="x">
+                    </div>
+                    <div class="form-group">
+                        <label for="y" class="col-form-label">Y Coordinate:</label>
+                        <input type="text" class="form-control" id="y" name="y">
+                    </div>
+                    <div class="form-group">
+                        <label for="z" class="col-form-label">Z Coordinate:</label>
+                        <input type="text" class="form-control" id="z" name="z">
+                    </div>
+                    <div class="form-group">
+                        <label for="active" class="col-form-label">Active:</label>
+                        <input type="text" class="form-control" id="active" name="active">
+                    </div>
+                    <div class="form-group">
+                        <label for="time" class="col-form-label">Time:</label>
+                        <input type="text" class="form-control" id="time" name="time">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Required Js -->
+    <!-- Required Js -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    // Edit button click event handler
+    $(document).on("click", ".edit-btn", function () {
+        // Get data attributes of the clicked row
+        const name = $(this).data("name");
+        const x = $(this).data("x");
+        const y = $(this).data("y");
+        const z = $(this).data("z");
+        const active = $(this).data("active");
+        const time = $(this).data("time");
+
+        // Fill the modal form fields with the clicked data
+        $("#name").val(name);
+        $("#x").val(x);
+        $("#y").val(y);
+        $("#z").val(z);
+        $("#active").val(active);
+        $("#time").val(time);
+
+        // Show the modal
+        $("#editModal").removeClass("hidden");
+    });
+
+    // Form submit event handler (for saving changes)
+    $("#editForm").submit(function (event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        // Collect the edited data from the form
+        const editedData = {
+            x: $("#x").val(),
+            y: $("#y").val(),
+            z: $("#z").val(),
+            active: $("#active").val(),
+            time: $("#time").val(),
+        };
+
+        // Update the table with the edited data
+        const editedRow = $(".edit-btn:focus").closest("tr"); // Find the closest row to the focused edit button
+        editedRow.find("td:eq(2)").text(editedData.x); // Update X Coordinate cell
+        editedRow.find("td:eq(3)").text(editedData.y); // Update Y Coordinate cell
+        editedRow.find("td:eq(4)").text(editedData.z); // Update Z Coordinate cell
+        editedRow.find("td:eq(5)").text(editedData.active); // Update Active cell
+        editedRow.find("td:eq(6)").text(editedData.time); // Update Time cell
+
+        // Clear the input fields
+        $("#x").val("");
+        $("#y").val("");
+        $("#z").val("");
+        $("#active").val("");
+        $("#time").val("");
+
+        // Hide the modal
+        $("#editModal").modal("hide");
+        console.log(editedData);
+    });
+</script>
+</body>
+</html>

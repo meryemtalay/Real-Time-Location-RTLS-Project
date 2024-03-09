@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Meta -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="keywords" content="RTLS" />
+    <meta name="author" content="Meryem Talay" />
+    <title>Toolbox</title>
+    <!-- Favicon icon -->
+    <link rel="icon" href="/assets/images/favicon.ico" type="image/x-icon" />
+    <!-- vendor css -->
+    <link rel="stylesheet" href="/assets/css/style.css" />
+
+    <style>
+        .toolbox {
+        width: 125px;
+        padding: 10px;
+        background-color: #b1d8d1d8;
+        }
+
+        .toolbox-item {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        }
+
+        .canvas-container {
+        margin-top: -78px;
+        width: 1200px;
+        height: 600px;
+        border: 3px solid rgb(15, 35, 68);
+        position: relative;
+        margin-left: 240px;
+        /* background-color: rgb(190, 221, 221); */
+        background-color:  #8fc9bd00 ;       
+        }
+
+        .canvas {
+        width: 100%;
+        height: 100%;
+        }
+
+        .control-panel {
+        position: absolute;
+        top: 0;
+        left: 240px;
+        display: block;
+        background-color: rgba(255, 255, 255, 0); /* Şeffaf arka plan */
+
+        padding: 20px;
+        }  
+      </style>
+  </head>
+  <body>
+    <%- include('navbar') %>
+    <%- include('sidebar') %>
+    <div class="pcoded-main-container">
+        <div class="pcoded-content">    
+          <div class="toolbox">
+            <img
+              src="/assets/toolboxsrc/desk.jpg"
+              alt="Image 1"
+              class="toolbox-item"
+              draggable="true"
+              id="img1"
+              ondragstart="drag(event)"
+            />
+            <img
+              src="/assets/toolboxsrc/door.jpg"
+              alt="Image 2"
+              class="toolbox-item"
+              draggable="true"
+              id="img2"
+              ondragstart="drag(event)"
+            />
+            <img
+              src="/assets/toolboxsrc/chat.png"
+              alt="Image 1"
+              class="toolbox-item"
+              draggable="true"
+              id="img3"
+              ondragstart="drag(event)"
+            />
+            <img
+              src="/assets/toolboxsrc/user.jpg"
+              alt="Image 4"
+              class="toolbox-item"
+              draggable="true"
+              id="img4"
+              ondragstart="drag(event)"
+            />
+            <!-- Diğer resimleri buraya ekleyin -->
+          </div>
+
+    <!-- Resim seçme butonu -->
+    <input type="file" id="fileInput" accept="image/*">
+
+
+    <div class="container">
+      <div class="canvas-container" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <canvas class="canvas" id="canvas"></canvas>
+        <div class="control-panel">
+          <label for="width">Genişlik:</label>
+          <input type="number" id="width" value="20" style="width: 50px" />
+          <label for="height">Yükseklik:</label>
+          <input type="number" id="height" value="20" style="width: 50px" />
+          <label for="x">X Konumu:</label>
+          <input type="number" id="x" value="0" style="width: 50px" />
+          <label for="y">Y Konumu:</label>
+          <input type="number" id="y" value="0" style="width: 50px" />
+        </div>
+        <div class="object-list-container">
+            <div class="object-list">
+                <select id="objectList" onchange="selectObject()">
+                    <!-- Seçenekler dinamik olarak JavaScript kodu ile eklenir -->
+                </select>
+            </div>
+            <div class="delete-button">
+                <button onclick="deleteObject()">SİL</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        var offsetX,
+          offsetY,
+          isDragging = false;
+        var selectedObject = null;
+  
+        var objects = [];
+
+        // Dosya seçme butonu
+        const fileInput = document.getElementById('fileInput');
+        // Dosya yükleme işlemi
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            
+            // Resim dosyası kontrolü
+            if (file && file.type.startsWith('image')) {
+                // Resim nesnesi oluşturma
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.onload = function() {
+                    URL.revokeObjectURL(this.src);
+                };
+
+                // Resmi normal resimlerin olduğu dizine kaydetme
+                saveImageToDirectory(file);
+
+                // Eklenen resmi işleme
+                handleAddedImage(img);
+            } else {
+                alert('Lütfen bir resim dosyası seçin.');
+            }
+        });
+
+        // Resmi normal resimlerin olduğu dizine kaydetme işlemi
+        function saveImageToDirectory(file) {
+            // Burada resmi istediğiniz bir yere kaydedebilirsiniz.
+            console.log('Seçilen resim:', file);
+        }
+
+        // Eklenen resmi işleme
+        function handleAddedImage(img) {
+            var canvas = document.getElementById("canvas");
+            var ctx = canvas.getContext("2d");
+            var rect = canvas.getBoundingClientRect();
+            
+            // Canvas'ın ortasını bul
+            var canvasCenterX = canvas.width / 2;
+            var canvasCenterY = canvas.height / 2;
+
+            // Resmin sol üst köşesini canvas'ın ortasına yerleştir
+            var x = canvasCenterX - img.width / 2;
+            var y = canvasCenterY - img.height / 2;
+
+            var object = {
+                img: img,
+                width: img.width,
+                height: img.height,
+                x: x,
+                y: y,
+            };
+
+            objects.push(object);
+
+            // Listbox içine eklenen nesnenin adını ekle
+            var objectList = document.getElementById("objectList");
+            var option = document.createElement("option");
+            option.text = "Nesne " + objects.length;
+            objectList.add(option);
+
+            // Resim ekleyildikten sonra kontrol panelini görüntüle
+            var controlPanel = document.querySelector(".control-panel");
+            // controlPanel.style.display = "block";
+            // Kontrol panelindeki değerleri güncelle
+            document.getElementById("width").value = img.width;
+            document.getElementById("height").value = img.height;
+            document.getElementById("x").value = x;
+            document.getElementById("y").value = y;
+
+            selectObject();
+            redraw();
+            saveToLocalStorage(); // Yeni eklenen objeyi localStorage'a kaydet
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+  
+        function drag(ev) {
+          var img = ev.target.cloneNode(true); // Sürüklenen resmin bir kopyasını oluştur
+          img.setAttribute("draggable", "false"); // Kopya resim sürüklenebilir olmasın
+          ev.dataTransfer.setDragImage(img, 20, 20); // Sürükleme sırasında gösterilecek resmin belirlenmesi
+          ev.dataTransfer.setData("text", ev.target.id);
+        }
+  
+        function drop(ev) {
+            ev.preventDefault();
+            var data = ev.dataTransfer.getData("text");
+            var img = document.getElementById(data);
+            var canvas = document.getElementById("canvas");
+            var ctx = canvas.getContext("2d");
+            var rect = canvas.getBoundingClientRect();
+            ctx.drawImage(img, x, y);
+
+            // Canvas'ın ortasını bul
+            var canvasCenterX = canvas.width / 2;
+            var canvasCenterY = canvas.height / 2;
+
+            // Resmin sol üst köşesini canvas'ın ortasına yerleştir
+            var x = canvasCenterX - img.width / 2;
+            var y = canvasCenterY - img.height / 2;
+
+            var object = {
+            img: img,
+            width: img.width,
+            height: img.height,
+            x: x,
+            y: y,
+            };
+            objects.push(object);
+
+            // Listbox içine eklenen nesnenin adını ekle
+            var objectList = document.getElementById("objectList");
+            var option = document.createElement("option");
+            option.text = "Nesne " + objects.length;
+            objectList.add(option);
+
+            // Resim ekleyildikten sonra kontrol panelini görüntüle
+            var controlPanel = document.querySelector(".control-panel");
+            // controlPanel.style.display = "block";
+            // Kontrol panelindeki değerleri güncelle
+            document.getElementById("width").value = img.width;
+            document.getElementById("height").value = img.height;
+            document.getElementById("x").value = x;
+            document.getElementById("y").value = y;
+
+            selectObject();
+            redraw();
+            saveToLocalStorage(); // Yeni eklenen objeyi localStorage'a kaydet
+        }
+
+         function selectObject() {
+          var selectedIndex = document.getElementById("objectList").selectedIndex;
+          selectedObject = objects[selectedIndex];
+  
+          document.getElementById("width").value = selectedObject.width;
+          document.getElementById("height").value = selectedObject.height;
+          document.getElementById("x").value = selectedObject.x;
+          document.getElementById("y").value = selectedObject.y;
+  
+          // Yeniden atanmış dinleyiciler
+          document.getElementById("width").addEventListener("input", function () {
+            selectedObject.width = parseInt(this.value);
+            redraw();
+            saveToLocalStorage(); // Değişikliği localStorage'a kaydet
+          });
+          document
+            .getElementById("height")
+            .addEventListener("input", function () {
+              selectedObject.height = parseInt(this.value);
+              redraw();
+              saveToLocalStorage(); // Değişikliği localStorage'a kaydet
+            });
+          document.getElementById("x").addEventListener("input", function () {
+            selectedObject.x = parseInt(this.value);
+            redraw();
+            saveToLocalStorage(); // Değişikliği localStorage'a kaydet
+          });
+          document.getElementById("y").addEventListener("input", function () {
+            selectedObject.y = parseInt(this.value);
+            redraw();
+            saveToLocalStorage(); // Değişikliği localStorage'a kaydet
+          });
+        } 
+        // Resmi toolbox'ta gösterme işlemi
+        function showImageInToolbox(src) {
+            const toolbox = document.querySelector('.toolbox');
+            const img = document.createElement('img');
+            img.src = src;
+            img.classList.add('toolbox-item');
+            img.draggable = true;
+            img.addEventListener('dragstart', drag);
+            toolbox.appendChild(img);
+        }
+  
+        function deleteObject() {
+          var selectedIndex = document.getElementById("objectList").selectedIndex;
+          objects.splice(selectedIndex, 1); // canvastan kaldırır
+          var objectList = document.getElementById("objectList");
+          objectList.remove(selectedIndex); // listeden kaldırır
+  
+          redraw();
+          saveToLocalStorage(); // Değişikliği localStorage'a kaydet
+        }
+  
+        // LocalStorage'a kaydetme fonksiyonu
+        function saveToLocalStorage() {
+          localStorage.setItem("objects", JSON.stringify(objects));
+        }
+  
+        // Sayfa yüklendiğinde localStorage'dan verileri geri yükleme
+        window.onload = function () {
+          var savedObjects = localStorage.getItem("objects");
+          if (savedObjects) {
+            objects = JSON.parse(savedObjects);
+  
+            var objectList = document.getElementById("objectList");
+            for (var i = 0; i < objects.length; i++) {
+              var option = document.createElement("option");
+              option.text = "Nesne " + (i + 1);
+              objectList.add(option);
+  
+              var img = new Image();
+              img.src = ["/assets/toolboxsrc/desk.jpg", "/assets/toolboxsrc/chat.png","/assets/toolboxsrc/user.jpg", "/assets/toolboxsrc/door.jpg"][i % 4]; // Her iki resmin de yüklenmesini sağlar
+              objects[i].img = img;
+            }
+  
+            redraw();
+          }
+        };
+  
+        function redraw() {
+          var canvas = document.getElementById("canvas");
+          var ctx = canvas.getContext("2d");
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          for (var i = 0; i < objects.length; i++) {
+            var obj = objects[i];
+            ctx.drawImage(obj.img, obj.x, obj.y, obj.width, obj.height);
+          }
+        }
+        // Data URI'yi Blob'a dönüştürme
+        function dataURItoBlob(dataURI) {
+            const byteString = atob(dataURI.split(',')[1]);
+            const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], { type: mimeString });
+        }
+    
+        // Şuanlık kaydetme işlemi yapılamıyor
+        function saveImageToFile(src) {
+            const imageBlob = dataURItoBlob(src);
+            const formData = new FormData();
+            formData.append('image', imageBlob, 'image.png');
+    
+            // Sunucuya POST isteği gönderme
+            fetch('/saveImage', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resim kaydedildi:', data);
+            })
+            .catch(error => {
+                console.error('Resim kaydedilirken hata oluştu:', error);
+            });
+        }
+
+        function saveImageToDirectory(file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64String = event.target.result;
+                const img = new Image();
+                img.src = base64String;
+    
+                // Resmi toolbox'ta gösterme
+                showImageInToolbox(img.src);
+                
+                // Resmi kaydetme işlemi
+                saveImageToFile(img.src);
+            };
+            reader.readAsDataURL(file);
+        }
+      </script> 
+
+    <script src="/assets/js/vendor-all.min.js"></script>
+    <script src="/assets/js/plugins/bootstrap.min.js"></script>
+    <script src="/assets/js/pcoded.min.js"></script>
+    
+  </body>
+</html>
+
+

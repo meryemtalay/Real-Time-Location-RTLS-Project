@@ -1,0 +1,167 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="" />
+    <meta name="keywords" content="">
+    <meta name="author" content="Phoenixcoded" />
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+    <!-- <title>Document</title> -->
+    <title>Barfas RTLS</title>
+</head>
+<body>
+    <%-include('sidebar')%>
+    <%-include('navbar')%>
+    <div class="pcoded-main-container">
+        <div class="pcoded-content">
+          <!-- [ breadcrumb ] start -->
+          <div class="page-header">
+            <div class="page-block">
+              <div class="row align-items-center">
+                <div class="col-md-12">
+                  <div class="page-header-title">
+                    <h5 class="m-b-10">Tag Listesi</h5>
+                  </div>
+                  <ul class="breadcrumb">
+                    <li class="breadcrumb-item">
+                      <a href="/dashboard/taglist"><i class="feather icon-home"></i></a>
+                    </li>
+                    <li class="breadcrumb-item">
+                      <a href="#!">Tag List</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- [ breadcrumb ] end -->
+          <!-- [ Main Content ] start -->
+          <div class="row">
+                <!-- <p>asds</p>                    -->
+                 <!-- Form-element -->
+                <div class="container mt-4">
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Personel Kayıt</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <form id="personelForm">
+                                            <div class="form-group">
+                                                <label for="exampleInputEmail1">Email address</label>
+                                                <input type="email" class="form-control" id="exampleInputEmail1"  placeholder="Mailinizi Girin...">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="exampleInputPassword1">Password</label>
+                                                <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Şifrenizi Girin...">
+                                            </div>
+
+                                            <button type="submit" class="btn btn-primary">Kayıt Et</button>
+                                        </form>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <form id="departmanForm">
+                                            <div class="form-group">
+                                                <label>Ad Soyad</label>
+                                                <input type="text" class="form-control" id="adSoyadInput" placeholder="Adınızı ve Soyadınızı Girin...">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Departman</label>
+                                                <select class="form-control" id="departmanSelect">
+                                                    <option value="">Departman Seçiniz...</option>
+                                                    <option value="Satış">Satış</option>
+                                                    <option value="Yazılım">Yazılım</option>
+                                                    <option value="Muhasebe">Muhasebe</option>
+                                                    <option value="İnsan Kaynakları">İnsan Kaynakları</option>
+                                                </select>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    <!-- Table -->
+                <div class="container mt-4">
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-body table-responsive">
+                                <table class="table table-hover mb-0" id="personelTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Ad Soyad</th>
+                                            <th>Email</th>
+                                            <th>Departman</th>
+                                            <th>Password</th>
+                                            <th>Edit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Table body will be dynamically populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+         </div>
+             <!-- [ Main Content ] end -->
+    <script src="/assets/js/vendor-all.min.js"></script>
+    <script src="/assets/js/plugins/bootstrap.min.js"></script>
+    <script src="/assets/js/pcoded.min.js"></script>
+    <script> </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var counter = 1; // Counter for numbering rows
+
+            // Form submit event handler
+            $('#personelForm').submit(function (e) {
+                e.preventDefault(); // Prevent the default form submission
+
+                // Get form values
+                var email = $('#exampleInputEmail1').val();
+                var password = $('#exampleInputPassword1').val();
+                var adSoyad = $('#adSoyadInput').val();
+                var departman = $('#departmanSelect').val();
+
+
+                // Check if any field is empty
+                if (email === '' || password === '' || adSoyad === '' || departman === '') {
+                    alert('Lütfen Boş Alanları Doldurunuz!!!');
+                    return;
+                }
+
+                // Add data to the table
+                $('#personelTable tbody').append('<tr><td>' + counter + '</td><td>' + adSoyad + '</td><td>' + email + '</td><td>' + departman + '</td><td>' + password + '</td> <td> <button type="button" class="btn btn-danger btn-sm delete-btn">Sil</button> </td> </tr>');
+
+                // Increment counter
+                counter++;
+
+                // Clear form inputs
+                $('#exampleInputEmail1').val('');
+                $('#exampleInputPassword1').val('');
+                $('#adSoyadInput').val('');
+                $('#departmanSelect').val('');
+            });
+
+            $(document).on('click', '.delete-btn', function(){
+                $(this).closest('tr').remove();
+            });
+
+        });
+    </script>
+    </body>
+
+
+</html>
