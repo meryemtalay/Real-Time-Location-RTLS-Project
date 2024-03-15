@@ -6,11 +6,10 @@ const port = 3000;
 const ejs = require('ejs');
 const fs = require('fs');
 const server = http.createServer(app); // HTTP sunucusu oluşturuluyor
-
 const mqtt = require("mqtt");
 const io = require("socket.io")(server); // Socket.io sunucusu oluştur
-
 const mqttClient = mqtt.connect("mqtt://192.168.1.121:1883");
+
 
 mqttClient.on("connect", () => {
     console.log("MQTT Broker ile bağlantı sağlandı");
@@ -23,7 +22,7 @@ mqttClient.on("message", (topic, message) => {
     io.emit("mqtt_message", data); // MQTT verisini istemcilere iletmek için sokete gönder
 });
 
-
+app.use(express.static('public'));
 app.use(express.static((__dirname, 'public')));
 // app.use(express.static((__dirname, 'dashboard/canvas')));
 app.use(fileUpload());
@@ -74,6 +73,7 @@ app.post('/login', (req, res) => {
   }
 });
 
+
 app.get('/dashboard', (req, res) => {
   res.render('dashboard/home');
 });
@@ -98,22 +98,6 @@ app.get('/dashboard/persregi', (req, res) => {
   res.render('dashboard/persregi');
 });
 
-// Dosya yükleme endpoint'i
-app.post('/upload', (req, res) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).send('Hiçbir dosya yüklenmedi.');
-  }
-
-  let sampleFile = req.files.sampleFile;
-
-  sampleFile.mv('C:\Users\meryem\OneDrive\Masaüstü\rtls-ui-f\Rtls_ui\public\assets\toolboxsrc' + sampleFile.name, (err) => {
-      if (err) {
-          return res.status(500).send(err);
-      }
-
-      res.send('Dosya yüklendi!');
-  });
-});
 
 app.listen(port, () => {
   console.log(`Sunucu http://localhost:${port} adresinde çalışıyor`);

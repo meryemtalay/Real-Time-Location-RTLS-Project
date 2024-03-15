@@ -18,7 +18,7 @@ mongoose.connect(cs)
     const User = mongoose.model('User', userSchema);
 
     // Yeni bir kullanıcı oluştur ve kaydet
-    const user = new User({ name: 'FIRAT', age: 22 });
+    const user = new User({ name: 'MERYEM', age: 22 });
     user.save()
       .then(() => {
         console.log('Yeni kullanıcı başarıyla kaydedildi.');
