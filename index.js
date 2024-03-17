@@ -1,16 +1,19 @@
 const express = require('express');
 const http = require('http');
 const fileUpload = require('express-fileupload');
+const session=require('express-session');
 const app = express();
 const port = 3000;
-const ejs = require('ejs');
-const fs = require('fs');
 const server = http.createServer(app); // HTTP sunucusu oluşturuluyor
 const mqtt = require("mqtt");
 const io = require("socket.io")(server); // Socket.io sunucusu oluştur
 const mqttClient = mqtt.connect("mqtt://192.168.1.121:1883");
-
-
+const collection=require("./userdb");
+app.use(session({
+  secret : 'secret',
+  cookie : { maxAge:3000},
+  saveUninitialized: false
+}));
 mqttClient.on("connect", () => {
     console.log("MQTT Broker ile bağlantı sağlandı");
     mqttClient.subscribe("silabs/aoa/position/multilocator-test_room/ble-pd-1C34F16110FF");
@@ -22,17 +25,16 @@ mqttClient.on("message", (topic, message) => {
     io.emit("mqtt_message", data); // MQTT verisini istemcilere iletmek için sokete gönder
 });
 
+app.use(express.json());
 app.use(express.static('public'));
 app.use(express.static((__dirname, 'public')));
 // app.use(express.static((__dirname, 'dashboard/canvas')));
 app.use(fileUpload());
 
 app.set('view engine', 'ejs');
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 
-const users = [
-  { username: "mer", password: "mer" }
-];
+
 
 const data = [
   {
@@ -54,22 +56,59 @@ const data = [
 ];
 
 // Ana sayfayı işle
-app.get('/', (req, res) => {
+app.get('/login/index', (req, res) => {
   res.render('login/index');
 });
+
 // Toolbox sayfasını işle
 app.get('/canvas/toolbox', (req, res) => {
   res.render('canvas/toolbox');
 });
 // Giriş işlemini yönet
-app.post('/login', (req, res) => {
+app.post('/login/signup', async (req, res) => {
+  const userdata= {
+    username: req.body.username,
+    password: req.body.password
+  }
+
+  try {
+
+    const existingUser = await collection.findOne({ username: userdata.username });
+
+    // Eğer kullanıcı zaten varsa hata mesajı göster ve işlemi durdur
+    if (existingUser) {
+      console.error('This user already registered!');
+      return res.redirect('/error');
+    }
+    const usersdata = await collection.insertMany(userdata);
+    console.log(usersdata);
+    // Kullanıcı başarıyla oluşturulduktan sonra login sayfasına yönlendir
+    res.redirect('/login/index');
+  } catch (error) {
+    console.error(error);
+    // Hata oluştuğunda veya kayıt başarısız olduğunda bir hata sayfasına yönlendirme 
+    res.redirect('/error');
+  }
+});
+
+// Giriş işlemini yönet
+app.post('/login/index', async (req, res) => {
   const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
-  if (user) {
-    // Kullanıcı doğruysa, dashboard sayfasına yönlendir
-    res.redirect('/dashboard');
-  } else {
-    res.send('Hatalı kullanıcı adı veya şifre!');
+
+  try {
+    // Kullanıcıyı veritabanından kontrol edin
+    const user = await collection.findOne({ username, password });
+    if (user) {
+      // Kullanıcı veritabanında bulunuyorsa, dashboard'a yönlendirin
+      res.redirect('/dashboard');
+    } else {
+      // Kullanıcı veritabanında bulunmuyorsa, login sayfasında kalsın
+      res.redirect('/login/index');
+    }
+  } catch (error) {
+    console.error(error);
+    // Hata oluştuğunda veya kayıt başarısız olduğunda bir hata sayfasına yönlendirme 
+    res.redirect('/error');
   }
 });
 
@@ -77,9 +116,11 @@ app.post('/login', (req, res) => {
 app.get('/dashboard', (req, res) => {
   res.render('dashboard/home');
 });
-app.get('/', (req, res) => {
-  res.render('/'); // veya isteğinize uygun bir işlem yapın
+
+app.get('/login/signup',(req,res)=> {
+  res.render('login/signup');
 });
+
 
 // Dashboard sayfasını işle
 app.get('/dashboard/taglist', (req, res) => {
@@ -100,5 +141,5 @@ app.get('/dashboard/persregi', (req, res) => {
 
 
 app.listen(port, () => {
-  console.log(`Sunucu http://localhost:${port} adresinde çalışıyor`);
+  console.log(`Sunucu http://localhost:${port}/login/index adresinde çalışıyor`);
 });

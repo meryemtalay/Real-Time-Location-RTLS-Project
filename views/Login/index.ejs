@@ -126,22 +126,34 @@
         <div class="shape"></div>
         <div class="shape"></div>
     </div>
-    <form action="/login" method="POST">
+    <form action="/login/index" method="POST">
         
         <img src="/assets/images/logo.png" alt="Logo" style="height: 80px; display: block; margin: 0 auto;">
 
         <br>
         
         <h3>RTLS Login</h3>
+		
+        <!-- <label for="email">E-mail</label>
+        <input type="text" class="form-control" id="email" name="email" placeholder="Password">
 
-        <label for="username">Username</label>
-        <input type="text" class="form-control" id="Email" name="username" placeholder="Email address">
+        <label for="password">Password</label>
+        <input type="password" class="form-control" id="Password" name="password" placeholder="Password">
+ -->
+
+
+		<label for="username">Name</label>
+        <input type="text" class="form-control" id="username" name="username" placeholder="Email address">
 
         <label for="password">Password</label>
         <input type="password" class="form-control" id="Password" name="password" placeholder="Password">
 
+
         <button class="btn btn-block btn-primary mb-4" >Login</button>
+		<a href="/login/signup" style="display: block; text-align: center; margin-top: 20px; color: #000000; text-decoration: underline;">Don’t have an account? <span style="font-weight: bold;">Signup</span></a>
+
+
     </form>
-</body>
+
 </html>
 
